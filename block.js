@@ -1,8 +1,8 @@
 const { registerBlockType } = wp.blocks;
-const { TextControl, Button } = wp.components;
-const { useState } = wp.element;
-const { apiFetch } = wp;
-
+const { TextControl, Button, Spinner } = wp.components;
+const { withState } = wp.compose;
+const { withSelect } = wp.data;
+const { decodeEntities } = wp.htmlEntities;
 
 registerBlockType('gutenberg-slideshow/script-block', {
     title: 'rtcamp Slideshow',
@@ -11,45 +11,77 @@ registerBlockType('gutenberg-slideshow/script-block', {
     attributes: {
         apiUrl: {
             type: 'string',
-            default: 'https://wptavern.com/wp-json/wp/v2/posts',
-        },
-        posts: {
-            type: 'array',
-            default: [],
+            default: 'https://example.com/wp-json/wp/v2/posts',
         },
     },
+    edit: withState({ loading: false })(function(props) {
+        const { attributes, setAttributes, loading } = props;
 
-    edit: function(props) {
-        const { attributes, setAttributes } = props;
-        const { apiUrl } = attributes;
-        const [posts, setPosts] = useState(attributes.posts);
+        const [posts, setPosts] = useState([]);
+        const [currentIndex, setCurrentIndex] = useState(0);
 
-        const fetchLatestPosts = () => {
-            apiFetch({ path: apiUrl })
-                .then((data) => {
+        const fetchPosts = () => {
+            // Set loading state while fetching data
+            props.setState({ loading: true });
+
+            fetch(attributes.apiUrl)
+                .then(response => response.json())
+                .then(data => {
                     setPosts(data);
-                    setAttributes({ posts: data });
+                    setCurrentIndex(0);
+                    props.setState({ loading: false });
                 })
-                .catch((error) => {
-                    console.error(error);
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    props.setState({ loading: false });
                 });
         };
-        const postElements = posts.map((post) => (
-            <div key={post.id}>
-                <h2>{post.title.rendered}</h2>
-                <p>{post.content.rendered}</p>
-            </div>
-        ));
+
+        useEffect(() => {
+            fetchPosts();
+        }, []); // Fetch data on initial block load
+
+        const prevSlide = () => {
+            setCurrentIndex((prevIndex) => (prevIndex === 0 ? posts.length - 1 : prevIndex - 1));
+        };
+
+        const nextSlide = () => {
+            setCurrentIndex((prevIndex) => (prevIndex === posts.length - 1 ? 0 : prevIndex + 1));
+        };
+
+        const currentPost = posts[currentIndex];
+
         return (
             <div>
-           <Button onClick={fetchLatestPosts}>Fetch Latest Posts</Button>
-           {postElements}
-       </div>
+                <TextControl
+                    label="API Endpoint URL"
+                    value={attributes.apiUrl}
+                    onChange={value => setAttributes({ apiUrl: value })}
+                />
+                <Button onClick={fetchPosts}>Fetch Data</Button>
+                {loading && <Spinner />}
+                {posts.length > 0 && (
+                    <div className="slideshow">
+                        <div className="slide">
+                            <h2>
+                                <a href={currentPost.link} target="_blank" rel="noopener noreferrer">
+                                    {decodeEntities(currentPost.title.rendered)}
+                                </a>
+                            </h2>
+                            <p>{new Date(currentPost.date).toLocaleDateString()}</p>
+                            <img src={currentPost.featured_media} alt={currentPost.title.rendered} />
+                        </div>
+                        <div className="nav">
+                            <button onClick={prevSlide}>&#8592; Prev</button>
+                            <button onClick={nextSlide}>Next &#8594;</button>
+                        </div>
+                    </div>
+                )}
+            </div>
         );
-    },
-
+    }),
     save: function() {
-        
+        // This block is dynamic, so no need to save content here
         return null;
     },
 });
