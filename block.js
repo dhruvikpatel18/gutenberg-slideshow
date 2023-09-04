@@ -93,7 +93,7 @@ registerBlockType('gutenberg-slideshow/script-block', {
         const currentPost = posts[currentIndex];
 
         return (
-            <div>
+            <div className={slideshowClass}>
                 <TextControl
                     label="API Endpoint URL"
                     value={attributes.apiUrl}

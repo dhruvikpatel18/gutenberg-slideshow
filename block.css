@@ -1,0 +1,74 @@
+/* Default styles for the slideshow */
+.slideshow {
+    position: relative;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Styles for the slides */
+.slideshow .slide {
+    display: none;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Style the image within each slide */
+.slideshow .slide img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Style the slide titles */
+.slideshow .slide h2 {
+    font-size: 24px;
+    margin: 10px 0;
+}
+
+/* Style the slide date */
+.slideshow .slide p {
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+/* Navigation buttons */
+.slideshow .nav {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Styles for navigation buttons (left and right arrows) */
+.slideshow .nav button {
+    background-color: #0073e6;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+/* Responsive styles for smaller screens*/
+@media (max-width: 768px) {
+    .slideshow {
+        padding: 0 20px;
+    }
+
+    .slideshow .slide h2 {
+        font-size: 20px;
+    }
+
+    .slideshow .slide p {
+        font-size: 14px;
+    }
+}
+
+/* Responsive styles for mobile devices*/
+@media (max-width: 480px) {
+    .slideshow .slide h2 {
+        font-size: 18px;
+    }
+
+    .slideshow .slide p {
+        font-size: 12px;
+    }
+}
