@@ -89,6 +89,16 @@ registerBlockType('gutenberg-slideshow/script-block', {
             }
         };
 
+        const handleInputChange = (newApiUrl) => {
+            setAttributes({ apiUrl: newApiUrl });
+        };
+
+        const handleChangeWebsite = () => {
+            // Fetch data from the new API URL when the "Change Website" button is clicked
+            fetchPosts();
+        };
+
+
 
         useEffect(() => {
             fetchPosts();
@@ -104,7 +114,7 @@ registerBlockType('gutenberg-slideshow/script-block', {
                 document.removeEventListener('touchstart', handleTouchStart);
                 document.removeEventListener('touchend', handleTouchEnd);
             };
-        }, []); // Fetch data on initial block load
+        }, [attributes.apiUrl]); // Fetch data when the apiUrl attribute changes
 
         const prevSlide = () => {
             setCurrentIndex((prevIndex) => (prevIndex === 0 ? posts.length - 1 : prevIndex - 1));
@@ -117,11 +127,11 @@ registerBlockType('gutenberg-slideshow/script-block', {
         const currentPost = posts[currentIndex];
 
         return (
-            <div>
+            <div className="slideshow">
                 <TextControl
                     label="API Endpoint URL"
                     value={attributes.apiUrl}
-                    onChange={value => setAttributes({ apiUrl: value })}
+                    onChange={handleInputChange}
                 />
                 <TextControl
                     label="Number of Posts"
@@ -150,6 +160,7 @@ registerBlockType('gutenberg-slideshow/script-block', {
                     onChange={value => setAttributes({ showDate: value })}
                 />
                 <Button onClick={fetchPosts}>Fetch Data</Button>
+                <Button onClick={handleChangeWebsite}>Change Website</Button>
                 {loading && <Spinner />}
                 {posts.length > 0 && (
                     <div className="slideshow">
