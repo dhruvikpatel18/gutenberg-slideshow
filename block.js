@@ -70,15 +70,39 @@ registerBlockType('gutenberg-slideshow/script-block', {
             }
         };
 
+        // Function to handle touch start event
+        const handleTouchStart = (event) => {
+            setTouchStartX(event.touches[0].clientX);
+        };
+
+        // Function to handle touch end event and trigger swipe navigation
+        const handleTouchEnd = (event) => {
+            const touchEndX = event.changedTouches[0].clientX;
+            const touchSensitivity = 50; // Adjust sensitivity as needed
+
+            if (touchStartX - touchEndX > touchSensitivity) {
+                // Swipe left, move to the next slide
+                setCurrentIndex((prevIndex) => (prevIndex === posts.length - 1 ? 0 : prevIndex + 1));
+            } else if (touchEndX - touchStartX > touchSensitivity) {
+                // Swipe right, move to the previous slide
+                setCurrentIndex((prevIndex) => (prevIndex === 0 ? posts.length - 1 : prevIndex - 1));
+            }
+        };
+
+
         useEffect(() => {
             fetchPosts();
 
             //event listener for keyboard navigation
             document.addEventListener('keydown', handleKeyboardNavigation);
+            document.addEventListener('touchstart', handleTouchStart);
+            document.addEventListener('touchend', handleTouchEnd);
 
             // Remove it when the block is unmounted
             return () => {
                 document.removeEventListener('keydown', handleKeyboardNavigation);
+                document.removeEventListener('touchstart', handleTouchStart);
+                document.removeEventListener('touchend', handleTouchEnd);
             };
         }, []); // Fetch data on initial block load
 
@@ -93,7 +117,7 @@ registerBlockType('gutenberg-slideshow/script-block', {
         const currentPost = posts[currentIndex];
 
         return (
-            <div className={slideshowClass}>
+            <div>
                 <TextControl
                     label="API Endpoint URL"
                     value={attributes.apiUrl}
