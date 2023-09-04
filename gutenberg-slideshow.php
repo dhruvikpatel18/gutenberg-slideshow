@@ -23,7 +23,7 @@
       null,
       true
   );
-   wp_enqueue_style('style-block', plugin_dir_url(__FILE__) . '/block.css');
+   wp_enqueue_style('style-block', plugin_dir_url(__FILE__) . 'block.css');
 }
 
 add_action('enqueue_block_editor_assets', 'slideshow_enqueue_scripts');

@@ -11,7 +11,7 @@ registerBlockType('gutenberg-slideshow/script-block', {
     attributes: {
         apiUrl: {
             type: 'string',
-            default: 'https://example.com/wp-json/wp/v2/posts',
+            default: 'https://wptavern.com/wp-json/wp/v2/posts',
         },
         numPosts: {
             type: 'number',
@@ -59,7 +59,38 @@ registerBlockType('gutenberg-slideshow/script-block', {
                 });
         };
 
-        // ... (previous code for rendering and navigation)
+         // Function to handle keyboard navigation
+         const handleKeyboardNavigation = (event) => {
+            if (event.key === 'ArrowRight') {
+                // Move to the next slide
+                setCurrentIndex((prevIndex) => (prevIndex === posts.length - 1 ? 0 : prevIndex + 1));
+            } else if (event.key === 'ArrowLeft') {
+                // Move to the previous slide
+                setCurrentIndex((prevIndex) => (prevIndex === 0 ? posts.length - 1 : prevIndex - 1));
+            }
+        };
+
+        useEffect(() => {
+            fetchPosts();
+
+            //event listener for keyboard navigation
+            document.addEventListener('keydown', handleKeyboardNavigation);
+
+            // Remove it when the block is unmounted
+            return () => {
+                document.removeEventListener('keydown', handleKeyboardNavigation);
+            };
+        }, []); // Fetch data on initial block load
+
+        const prevSlide = () => {
+            setCurrentIndex((prevIndex) => (prevIndex === 0 ? posts.length - 1 : prevIndex - 1));
+        };
+
+        const nextSlide = () => {
+            setCurrentIndex((prevIndex) => (prevIndex === posts.length - 1 ? 0 : prevIndex + 1));
+        };
+
+        const currentPost = posts[currentIndex];
 
         return (
             <div>
@@ -97,13 +128,35 @@ registerBlockType('gutenberg-slideshow/script-block', {
                 <Button onClick={fetchPosts}>Fetch Data</Button>
                 {loading && <Spinner />}
                 {posts.length > 0 && (
-                    // ... (previous code for rendering slideshow)
+                    <div className="slideshow">
+                    <div className="slide">
+                        <h2>
+                            <a href={currentPost.link} target="_blank" rel="noopener noreferrer">
+                                {decodeEntities(currentPost.title.rendered)}
+                            </a>
+                        </h2>
+                        <p>{new Date(currentPost.date).toLocaleDateString()}</p>
+                        <img src={currentPost.featured_media} alt={currentPost.title.rendered} />
+                    </div>
+                    <div className="nav">
+                        <button onClick={prevSlide}>&#8592; Prev</button>
+                        <button onClick={nextSlide}>Next &#8594;</button>
+                    </div>
+                </div>
                 )}
                 {loading || (
                     <div className="live-preview">
                         <h3>Live Preview</h3>
                         {livePreview !== null && (
-                            // ... (previous code for rendering live preview)
+                            <div className="slide">
+                            <h2>
+                                <a href={posts[livePreview].link} target="_blank" rel="noopener noreferrer">
+                                    {decodeEntities(posts[livePreview].title.rendered)}
+                                </a>
+                            </h2>
+                            <p>{new Date(posts[livePreview].date).toLocaleDateString()}</p>
+                            <img src={posts[livePreview].featured_media} alt={posts[livePreview].title.rendered} />
+                        </div>
                         )}
                     </div>
                 )}
