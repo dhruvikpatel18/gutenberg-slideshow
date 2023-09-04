@@ -36,20 +36,29 @@ registerBlockType('gutenberg-slideshow/script-block', {
     },
     edit: withState({ loading: false, livePreview: null })(function(props) {
         const { attributes, setAttributes, loading, setState } = props;
-
         const [posts, setPosts] = useState([]);
         const [currentIndex, setCurrentIndex] = useState(0);
 
         const fetchPosts = () => {
+
+            // Check if data is cached in local storage
+            const cachedData = localStorage.getItem('gutenbergSlideshowData');
+
+            if (cachedData) {
+                setPosts(JSON.parse(cachedData));
+                return;
+            }
+
             // Set loading state while fetching data
             setState({ loading: true, livePreview: null });
 
             fetch(attributes.apiUrl)
                 .then(response => response.json())
                 .then(data => {
-                    // Limit fetched posts based on numPosts setting
-                    const limitedPosts = data.slice(0, attributes.numPosts);
-                    setPosts(limitedPosts);
+                    // Cache the fetched data in local storage
+                    localStorage.setItem('gutenbergSlideshowData', JSON.stringify(data));
+
+                    setPosts(data);
                     setCurrentIndex(0);
                     setState({ loading: false, livePreview: 0 });
                 })
@@ -90,7 +99,16 @@ registerBlockType('gutenberg-slideshow/script-block', {
         };
 
         const handleInputChange = (newApiUrl) => {
+            // Clear the cached data when the API URL changes
+            localStorage.removeItem('gutenbergSlideshowData');
+
             setAttributes({ apiUrl: newApiUrl });
+        };
+
+        const handleCacheClear = () => {
+            // Clear the cached data manually
+            localStorage.removeItem('gutenbergSlideshowData');
+            setPosts([]);
         };
 
         const handleChangeWebsite = () => {
@@ -161,6 +179,7 @@ registerBlockType('gutenberg-slideshow/script-block', {
                 />
                 <Button onClick={fetchPosts}>Fetch Data</Button>
                 <Button onClick={handleChangeWebsite}>Change Website</Button>
+                <Button onClick={handleCacheClear}>Clear Cache</Button>
                 {loading && <Spinner />}
                 {posts.length > 0 && (
                     <div className="slideshow">
