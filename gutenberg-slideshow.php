@@ -17,16 +17,32 @@
 
  function slideshow_enqueue_scripts() {
    wp_enqueue_script(
-      'gutenberg-slideshow',
+      'block-script  ',
       plugin_dir_url(__FILE__) . 'block.js',
       ['wp-blocks', 'wp-components', 'wp-element', 'wp-api-fetch'],
       null,
       true
   );
-   wp_enqueue_style('style-block', plugin_dir_url(__FILE__) . 'block.css');
+  wp_enqueue_style(
+   'block-style',
+   plugin_dir_url(__FILE__) . 'block.css',
+   array(),
+   '1.0.0'
+);
+wp_set_script_translations('block', 'gutenberg-slideshow');
 }
 
 add_action('enqueue_block_editor_assets', 'slideshow_enqueue_scripts');
-?>
+
+// Register the Gutenberg block
+function my_register_block() {
+   register_block_type('gutenberg-slideshow/script-block', array(
+       'editor_script' => 'block-script',
+       'editor_style' => 'block-style',
+   ));
+}
+
+add_action('init', 'my_register_block');
+
 
  
